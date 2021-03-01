@@ -1,1 +1,1 @@
-# Bezpiecze-stwo-sieci
+# Bezpieczenstwo sieci komputerowych
