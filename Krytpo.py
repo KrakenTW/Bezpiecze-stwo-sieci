@@ -9,25 +9,28 @@ root.geometry('800x600')
 
 def button_command():
     text = entry1.get()
-    print(text)
+    list_of_letters = list(str(text))
+    print(list_of_letters)
     input = entry1.get()
-    return input
+    return list_of_letters
 
-def cryptography(input, key):
-    encoded_chars = []
-    for i in len(input):
-        key_c = key[i % len(key)]
-        encoded_c = chr(ord(input[i]) + ord(key_c) % 256)
-        encoded_chars.append(encoded_c)
-    encoded_string = "".join(encoded_chars)
-    return base64.urlsafe_b64encode(encoded_string)
+def cryptography(list_of_letters, key):
+    klucz = key
+    for i in len(list_of_letters):
+        print(list_of_letters[i])
+    
+    
+        
 
 entry1 = Entry(root, width = 30)
 entry1.pack()
 Button(root, text="Tekst", command=button_command).pack()
 key = open(r"C:\Users\kraken\Desktop\krytpo\Bezpiecze-stwo-sieci\kod.txt")
 print(key.read())
-cryptography(input, key)
+list_of_letters = list(str(entry1))
+print(list_of_letters)
+cryptography(list_of_letters,key)
+print(len(list_of_letters))
 
 
 root.mainloop()
