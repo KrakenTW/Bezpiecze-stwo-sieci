@@ -19,7 +19,7 @@ def button_command():
 def cryptography(list_of_letters, key):
     klucz = key
     dl = len(list_of_letters)
-    
+
     for i in range(dl):
         kodowanie = 0
         while(kodowanie <= dl):
