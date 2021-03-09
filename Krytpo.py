@@ -1,35 +1,84 @@
-import sys
 import tkinter
-import base64
-import numpy as np
-
+import argparse
 
 root = tkinter.Tk()
-root.geometry("800x600")
+root.geometry("1024x768")
 
+mainMenu = tkinter.Menu()
 
-def button_command():
+root.config(menu=mainMenu)
 
-    text = entry1.get()
+fileMenu = tkinter.Menu(mainMenu)
 
-    list_of_letters = list(str(text))
+mainMenu.add_cascade(label='Szyfr', menu = fileMenu)
+def button_RailFence():
+    
+    RailFence = entry1.get()
+    
+    list_of_letters = str(RailFence)
+    
     print(list_of_letters)
-    return text
+    
+    word = railfence_encrypt(word = list_of_letters, n = 3)
+    print("zaszyfrowane " + word)
+    decrypt = decrypt_rail_fence(word, 3)
+    print("rozszyfrowane  " + decrypt)
+    return RailFence
+#cipher of railfence 
+def railfence_encrypt(word, n):
+    if n <= 1:
+        return word
+
+    ascending = False
+    encrypted = n * ['']
+    counter = 0
+
+    for letter in word:
+        encrypted[counter] += letter
+        if ascending:
+            counter -= 1
+            if counter == 0:
+                ascending = False
+        else:
+            counter += 1
+            if counter == n-1:
+                ascending = True
+    
+    return ''.join(encrypted)
+
+def button_MatrixA():
+        
+    MatrixA = entry2.get()
+    
+    list_of_letters = str(MatrixA)
+    print(list_of_letters)
+    encrypted_message = matrix_encryption(word=list_of_letters, secret_key = "2-1-3")
+    print(encrypted_message)
+    
+
+def button_MatrixB():
+        
+    MatrixB = entry3.get()
+
+    list_of_letters = list(str(MatrixB))
+    print(list_of_letters)
+    secret_key = "3-1-4-2"
+    return MatrixB
+
+entry1 = tkinter.Entry(root, width=30)
+entry1.pack()
+tkinter.Button(root, text="RailFence", command=button_RailFence).pack()
 
 
-def cryptography(list_of_letters, key):
-    klucz = key
-    dl = len(list_of_letters)
+entry2  = tkinter.Entry(root , width=30)
+entry2.pack()
+tkinter.Button(root, text="MatrixA", command=button_MatrixA).pack()
 
-    for i in range(dl):
-        kodowanie = 0
-        while kodowanie <= dl:
-            print(list_of_letters[kodowanie])
-            kodowanie = new_func(kodowanie)
+entry3  = tkinter.Entry(root , width=30)
+entry3.pack()
+tkinter.Button(root, text="MatrixA", command=button_MatrixB).pack()
 
 
-def new_func(kodowanie):
-    return kodowanie + 4
 
 
 def encrypt_rail_fence(text, key):
@@ -105,68 +154,87 @@ def decrypt_rail_fence(cipher, key):
         else:
             row -= 1
     return "".join(result)
-
-
-def string_to_matrix(str_in: str):
+def _string_to_matrix(str_in: str):
     """ Creates square matrix from string input """
     nums = list(str_in)
     n = int(len(nums) ** 0.5)
     return list(map(list, zip(*[map(str, nums)] * n)))
 
 
-def encrypt_matrix(word: str, key: str):
+def matrix_encryption(word: str, secret_key: str):
     """
-        Encrypt word using matrix shift
-        word : str
-        Actual word to encrypt
-        key: str
-        integeres separeted with `-`. This parameter determine
-        shift order.
+    Encrypt/decrypt word using matrix shift
+    word : str
+    Actual word to encrypt
+    key: str
+    integeres separeted with `-`. This parameter determine
+    shift order.
     """
-    key = key.split("-")
-    matrix = string_to_matrix(str(word))
-    if len(matrix[0]) != len(key):
+    secret_key = secret_key.split("-")
+    matrix = _string_to_matrix(str(word))
+    if len(matrix[0]) != len(secret_key):
         raise ValueError("Klucz musi być tej samej długości co ilość kolumn macierzy.")
-    encrypted_word = ''
+    encrypted_word = ""
     for word in matrix:
-        for i, j in enumerate(key):
+        for i, j in enumerate(secret_key):
             encrypted_word += word[int(j) - 1]
-    # To brało kolumny wg kolejnosci klucza
-    # encrypted_word = []
-    # for j in key:
-    #     temp = []
-    #     for i in range(0, len(matrix)):
-    #         temp.append(matrix[i][int(j) - 1])
-    #     encrypted_word.extend(temp)
-    encrypted_word = ''.join(map(str, encrypted_word))
+    encrypted_word = "".join(map(str, encrypted_word))
 
     return encrypted_word
 
 
-def decrypt_matrix(encrypted_word: str, key: str):
-    key = key.split("-")
+def _word_to_matrix(word, secret_key):
+    """Convert word into matrix with secret_key based length
+    Temu chyba bliżej do tego co w zadaniu przynajmniej podpunktowi B
+    """
+    big_arr = []
+    temp_arr = []
+    word = list(word)
+    while word:
+        while len(temp_arr) < len(secret_key):
+            try:
+                temp_arr.append(word.pop(0))
+            except IndexError:
+                break
+        big_arr.append(temp_arr)
+        temp_arr = []
+    return big_arr
 
+
+def matrix_shift(word: str, secret_key: str):
+    secret_key = secret_key.split("-")
+    matrix = _word_to_matrix(word, secret_key)
+    if len(matrix) != len(secret_key):
+        raise ValueError("Klucz musi być tej samej długości co ilość kolumn macierzy.")
+    encrypted_word = ""
+    for w in matrix:
+        for i, j in enumerate(secret_key):
+            try:
+                encrypted_word += w[int(j) - 1]
+            # Niektóre komórki w ostatni wierszu mogą być puste i przy niekorzystnym ułożeniu klucza
+            # może pojawić się odwołanie do nieistniejącej komórki
+            except IndexError:
+                continue
+    encrypted_word = "".join(map(str, encrypted_word))
+
+    return encrypted_word
+
+#def Railword(word: str, secret_key: str):
+ #   word = matrix_shift(word="CRYPTOGRAPHYOSA", secret_key='3-1-4-2')
+  #  print(word)
+   # return None
 
 
 if __name__ == "__main__":
-    # print(encrypt_rail_fence("geeek", 2))
-    # print(encrypt_rail_fence("GeeksforGeeks ", 3))
-    # print(encrypt_rail_fence("defend the east wall", 3))
-    #
-    # print(decrypt_rail_fence("GsGsekfrek eoe", 3))
-    # print(decrypt_rail_fence("atc toctaka ne", 2))
-    # print(decrypt_rail_fence("dnhaweedtees alf tl", 3))
-    encrypted_message = encrypt_matrix(word="CRYPTOGRAPHYOSA", key="2-1-3")
-    print(encrypted_message)
-    # decrypted_message = decrypt_matrix(encrypted_message=encrypted_message, key="3-1-2")
+    encrypted_message = matrix_encryption(word="CRYPTOGRAPHYOSA", secret_key = "3-1-2")
+    fileMenu.add_command(label = 'Rail Fence')
+    fileMenu.add_separator()
+    fileMenu.add_command(label = 'Przestawienie macierzowe A')
+    fileMenu.add_separator()
+    fileMenu.add_command(label = 'Przestawienie macierzowe B')
 
 
-entry1 = tkinter.Entry(root, width=30)
-entry1.pack()
-tkinter.Button(root, text="Tekst", command=button_command).pack()
-text = button_command
 
-key = open(r"kod.txt")
 
 
 root.mainloop()
