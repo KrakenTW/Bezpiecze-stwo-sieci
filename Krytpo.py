@@ -1,9 +1,5 @@
-import sys
 import tkinter
-import base64
-import numpy as np
-
-
+from matrix import matrix_encryption, matrix_shift
 root = tkinter.Tk()
 root.geometry("800x600")
 
@@ -107,47 +103,6 @@ def decrypt_rail_fence(cipher, key):
     return "".join(result)
 
 
-def string_to_matrix(str_in: str):
-    """ Creates square matrix from string input """
-    nums = list(str_in)
-    n = int(len(nums) ** 0.5)
-    return list(map(list, zip(*[map(str, nums)] * n)))
-
-
-def encrypt_matrix(word: str, key: str):
-    """
-        Encrypt word using matrix shift
-        word : str
-        Actual word to encrypt
-        key: str
-        integeres separeted with `-`. This parameter determine
-        shift order.
-    """
-    key = key.split("-")
-    matrix = string_to_matrix(str(word))
-    if len(matrix[0]) != len(key):
-        raise ValueError("Klucz musi być tej samej długości co ilość kolumn macierzy.")
-    encrypted_word = ''
-    for word in matrix:
-        for i, j in enumerate(key):
-            encrypted_word += word[int(j) - 1]
-    # To brało kolumny wg kolejnosci klucza
-    # encrypted_word = []
-    # for j in key:
-    #     temp = []
-    #     for i in range(0, len(matrix)):
-    #         temp.append(matrix[i][int(j) - 1])
-    #     encrypted_word.extend(temp)
-    encrypted_word = ''.join(map(str, encrypted_word))
-
-    return encrypted_word
-
-
-def decrypt_matrix(encrypted_word: str, key: str):
-    key = key.split("-")
-
-
-
 if __name__ == "__main__":
     # print(encrypt_rail_fence("geeek", 2))
     # print(encrypt_rail_fence("GeeksforGeeks ", 3))
@@ -156,10 +111,9 @@ if __name__ == "__main__":
     # print(decrypt_rail_fence("GsGsekfrek eoe", 3))
     # print(decrypt_rail_fence("atc toctaka ne", 2))
     # print(decrypt_rail_fence("dnhaweedtees alf tl", 3))
-    encrypted_message = encrypt_matrix(word="CRYPTOGRAPHYOSA", key="2-1-3")
-    print(encrypted_message)
-    # decrypted_message = decrypt_matrix(encrypted_message=encrypted_message, key="3-1-2")
-
+    encrypted_message = matrix_encryption(word="CRYPTOGRAPHYOSA", secret_key="2-1-3")
+    word = matrix_shift(word="CRYPTOGRAPHYOSA", secret_key='3-1-4-2')
+    print(word)
 
 entry1 = tkinter.Entry(root, width=30)
 entry1.pack()
