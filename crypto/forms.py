@@ -11,5 +11,5 @@ IMPLEMENTED_CIPHERS_CHOICES = [
 class CipherForm(forms.Form):
     input = forms.CharField()
     key = forms.CharField()
-    input_file = forms.FileInput()
+    input_file = forms.FileField()
     cipher = forms.ChoiceField(choices=IMPLEMENTED_CIPHERS_CHOICES)

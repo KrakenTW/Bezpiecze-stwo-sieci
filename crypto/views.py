@@ -1,9 +1,12 @@
+import io
+
 from django.http import JsonResponse
 from django.views.generic.edit import FormView
 
 from crypto.ciphers.matrix_shift import matrix_encryption
 from crypto.ciphers.rail_fence import railfence_encrypt, decrypt_rail_fence
-from crypto.ciphers.vigenere import encrypt_vigenere, decrypt_vigenere, crypt_cesar
+from crypto.ciphers.vigenere import encrypt_vigenere, decrypt_vigenere
+from crypto.ciphers.ceasr import crypt_cesar
 from crypto.forms import CipherForm, IMPLEMENTED_CIPHERS_CHOICES
 
 
@@ -17,6 +20,9 @@ class BasicFormView(FormView):
         input = form.cleaned_data.get('input')
         cipher = form.cleaned_data.get('cipher')
         key = form.cleaned_data.get('key')
+        file_input = form.cleaned_data.get('input_file')
+        if file_input:
+            input = io.BytesIO(file_input)
         if self.is_matrix_shift(cipher):
             output = matrix_encryption(input, key)
         elif cipher == IMPLEMENTED_CIPHERS_CHOICES[0][0]:

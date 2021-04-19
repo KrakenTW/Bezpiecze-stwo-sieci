@@ -1,22 +1,22 @@
-def generateKey(string, key):
+def generate_key(string, key):
     key = list(key)
     if len(string) == len(key):
-        return (key)
+        return key
     else:
         for i in range(len(string) -
                        len(key)):
             key.append(key[i % len(key)])
-    return ("".join(key))
+    return "".join(key)
 
 
-def cipherText(string, key):
-    cipher_text = []
+def encrypt_text(string, key):
+    text = []
     for i in range(len(string)):
         x = (ord(string[i]) +
              ord(key[i])) % 26
         x += ord('A')
-        cipher_text.append(chr(x))
-    return ("".join(cipher_text))
+        text.append(chr(x))
+    return "".join(text)
 
 
 def decrypt_vigenere(cipher_text, key):
@@ -26,28 +26,9 @@ def decrypt_vigenere(cipher_text, key):
              ord(key[i]) + 26) % 26
         x += ord('A')
         orig_text.append(chr(x))
-    return ("".join(orig_text))
+    return "".join(orig_text)
 
 
 def encrypt_vigenere(input, key):
-    key = generateKey(input, key)
-    cipher_text = cipherText(input, key)
-    return cipher_text
-
-
-def crypt_cesar(text, shift):
-    result = ""
-
-    # traverse text
-    for i in range(len(text)):
-        char = text[i]
-
-        # Encrypt uppercase characters
-        if (char.isupper()):
-            result += chr((ord(char) + shift - 65) % 26 + 65)
-
-        # Encrypt lowercase characters
-        else:
-            result += chr((ord(char) + shift - 97) % 26 + 97)
-
-    return result
+    key = generate_key(input, key)
+    return encrypt_text(input, key)
