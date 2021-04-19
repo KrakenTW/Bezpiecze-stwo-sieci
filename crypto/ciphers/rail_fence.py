@@ -1,9 +1,11 @@
-def railfence_encrypt(word, n):
-    if n <= 1:
+def railfence_encrypt(word, key):
+    key = cast_to_int(key)
+
+    if key <= 1:
         return word
 
     ascending = False
-    encrypted = n * [""]
+    encrypted = key * [""]
     counter = 0
 
     for letter in word:
@@ -14,13 +16,15 @@ def railfence_encrypt(word, n):
                 ascending = False
         else:
             counter += 1
-            if counter == n - 1:
+            if counter == key - 1:
                 ascending = True
 
     return "".join(encrypted)
 
 
 def decrypt_rail_fence(cipher, key):
+    key = cast_to_int(key)
+
     rail = [["\n" for i in range(len(cipher))] for j in range(key)]
 
     dir_down = None
@@ -65,3 +69,11 @@ def decrypt_rail_fence(cipher, key):
         else:
             row -= 1
     return "".join(result)
+
+
+def cast_to_int(value):
+    try:
+        key = int(value)
+    except ValueError:
+        key = None
+    return key
