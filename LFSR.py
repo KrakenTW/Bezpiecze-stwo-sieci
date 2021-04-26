@@ -1,108 +1,93 @@
 import itertools
+import binascii
 import numpy as np
+from os import X_OK, path
 
-def GET_LFSR():
-   
-    tempInput = input("Wprowadz kod LFSR ktory chcesz przeanalizowac: ")
-    lfsr = []
-    for digit in tempInput:
-        lfsr.append(int(digit))  # konwertujemy liczby do przekonwertowania 
-                                 # zostają one zwrócone w formie tablicy
-       
-    return lfsr
 
-def subSequences(lfsr):
-    """
-    wczytywanie subsekwencji LFSR z pamięci oraz oczyszczanie pamięci programu.
-    zwracana jest lista wszystkich kroków wykorzystanych do stworzenia LFSR
-    
-    """
-    allSequences = []
+def lfsr(seed, taps,dl):
+    repeat = 0
+    sr, xor = seed, 0
+    key = []
+    while 1:
+        
+        if(int(sr[0]) == 0 and int(sr[3]) == 0):
+            key.append("0")
+            
+        if(int(sr[0]) == 1 and int(sr[3]) == 1):
+            key.append("1")
+            
+        if(int(sr[0]) == 1 and int(sr[3]) == 0):
+            key.append("0")
+            
+        if(int(sr[0]) == 0 and int(sr[3]) == 1):
+            key.append("1")
 
-    for item in itertools.product([0, 1], repeat= len(lfsr)):
-        allSequences.append(list(item))                 #Wyszukiwanie wszystkich mozliwych sekwencji
+        repeat = repeat + 1
 
-    subSequencesLength = []
-    while len(allSequences) != 0:                       #wyszukanie pozostalych korzystajac z historii
-                                                        #(jeżeli obiekt nie znajduje sie w histori oznacza ze został pominięty)
-        currentSequence = allSequences[0]
-        history = []
-        lengthOfSubsequence = 0
-        while currentSequence not in history:
-            result = 0
-            history.append(currentSequence)
-            for i in range(0,len(lfsr)):
-                result = (result + (currentSequence[i]*lfsr[i])) % 2
-
-            newSequence = currentSequence[1:]
-            newSequence.append(result)
-            currentSequence = newSequence
-            lengthOfSubsequence+= 1
-
-        print(history, "Dlugosc: %d"  % (lengthOfSubsequence))
-        subSequencesLength.append(lengthOfSubsequence)
-        for i in range(0, len(history)):
-            allSequences.remove(history[i])
-    print("Dlugosc subsekwencji: %s " %(subSequencesLength))
-
-def draw(lfsr):
-    """
-    Wypisanie do konsoli wszystkich wyników pozyskanych w trakcie tworzonych sekwencji
-
-    """
-    licznik = 0
-    listaXOR = []
-    listaBox = []
-    ostatniBox = 0
-    print(r"{tikzpicture}")
-    for i in range(0,len(lfsr)):
-        print(r"[draw,align=left,minimum size=1cm] (%s) at (%s ,0) {$S_{i+%s}$};" % (i, 2*i ,i))       #draws boxes of S_i
-        if i == len(lfsr)-1:
-            ostatniBox = i
-            print(r"(end) at ($ (%s) + (2, 0)$);" % (i))        #coordinate of very last box
-        listaBox.append('%s' %(i))                               #keeps track of the boxes
-        if lfsr[i] == 1:    #if the box is 'enabled'
-            if i!= 0:       #and it is not the very first box
-                licznik += 1
-                listaXOR.append('xor%s' %(i))
-                print(r"[draw,align=left,minimum size=0.5cm, shape = circle] (xor%s) at (%s, 2) {$+$};" % (i, 2 * i))      #prints the xor symbols above each S_i needed
-                print(r"[<-, line width = 0.5mm] (xor%s) -- (%s);" % (i, i))   #prints lines connecting xors and nodes
-                if licznik == 1:
-                    print(r"[->, line width = 0.5mm] (0, 2) -- (xor%s);" % (i)) #if the licznik=1, connect S_{i} with the first xor
-            else:
-                print(r"[line width = 0.5mm] (0, 2) -- (%s);" % (i))
-    for i in listaXOR:
-        if i != listaXOR[len(listaXOR)-1]:
-                print(r"[->, line width = 0.5mm] (%s) -- (%s);" % (i, listaXOR[listaXOR.index(i)+1]))
+        for t in taps:
+            xor += int(sr[t-1])
+        if xor%2 == 0.0:
+            xor = 0
         else:
-                print(r" (end1) at ($ (%s) + (2, 0)$);" % (i))
-                print(r"[line width = 0.5mm] (end1)  -- (%s);" % (i))
-                print(r"[line width = 0.5mm] (end)  -- (end1);")
-                print(r"[->, line width = 0.5mm] (end)  -- (%s);" %(ostatniBox))
+            xor = 1
+        sr, xor = str(xor) + sr[:-1], 0
+        
+            
+        if repeat == dl:
+            return key
 
-    print(r"[<-, line width = 0.5mm] (-1.5,0) -- (0);")
-    for i in range(0, len(lfsr)):
-        if i != len(lfsr)-1:
-            print(r"[<-, line width = 0.5mm] (%s) -- (%s);" %(i, i+1))
-        if lfsr[i] == 1:
-             continue
-    print(r"{tikzpicture}")
+def listToString(s): 
+    '''
+    zamiana listy na string wymagany do dzialania lfsr
+    '''
+    str1 = "" 
+    
+    for ele in s: 
+        str1 += ele  
+    
+    return str1 
 
-def matrix(lfsr):
-    """
-    pobieramy długość podanego kodu LFSR w formie tablicy za pomocą metody len
-    """
-    n = len(lfsr)
-    identity = np.identity(n)       #indentyfikacja danych
-    matrix = np.roll(identity, (-1,0))      #przesunięcie macierzy ku dołowi
-    matrix[n-1,n-1] = 0
-    for i in range(0,len(lfsr)):
-        matrix[i,n-1] = lfsr[i]             #przesunięcie macierzy do jednej z pobliskich lokalizacji
-    return matrix
+def tekst_to_bytes(tekst):
+    # initializing string 
+    test_str = tekst
+    
+    # printing original string 
+    print("The original string is : " + str(test_str))
+    
+    # using join() + bytearray() + format()
+    # Converting String to binary
+    res = ''.join(format(i, '08b') for i in bytearray(test_str, encoding ='utf-8'))
+    
+    # printing result 
+    print("tekst:  " + str(res))
+    return str(res)   
 
-if __name__ == "__main__":
-    lfsr = GET_LFSR()
-    print(matrix(lfsr))
+def Cipher(BinTekst, key, dlBin):
+    Ciphered = key
+    i = 1
+    while i != dlBin:
+        if BinTekst[:i] == 0:
+            if key[:i] == 0:
+                Ciphered[:i] = "0"
+            else:
+                Ciphered[:i] = "1"
+        else:
+            if key[:i] == 0:
+                Ciphered[:i] = "0"
+            else:
+                Ciphered[:i] = "1"
+        
+    print(Ciphered)
+    return Ciphered
 
-    subSequences(lfsr)
-    draw(lfsr)
+tempInput = input("Wprowadz kod LFSR ktory chcesz przeanalizowac: ")
+Tekst = input("Wprowadz tekst do zaszyfrowania:  ")
+BinTekst = tekst_to_bytes(Tekst)
+dlBin = len(BinTekst)
+key = lfsr(tempInput, (1,4), dlBin)      #example
+key = listToString(key)
+print("klucz:  " + key)
+Zaszyfrowane = Cipher(BinTekst, key, dlBin)
+
+print("ciphe:  " + Zaszyfrowane)
+
