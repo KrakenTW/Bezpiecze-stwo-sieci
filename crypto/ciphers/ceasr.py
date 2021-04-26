@@ -1,5 +1,6 @@
 def crypt_cesar(text, shift):
     result = ""
+    shift = int(shift)
     for i in range(len(text)):
         char = text[i]
 
