@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def _string_to_matrix(str_in: str):
     """ Creates square matrix from string input """
     nums = list(str_in)
