@@ -69,36 +69,37 @@ def matrix_shift(word: str, secret_key: str):
 
 # Clean this code
 class Matrix:
-    def __init__(self, key, input):
+    def __init__(self, key, text_to_encrypt):
         self.key_value_list = self.set_values_to_keys_letters(key)
+        self.matrix_cells = self.fill_matrix(text_to_encrypt)
+
+    def fill_matrix(self, text_to_encrypt):
         row_length = self.get_row_length()
         matrix_cells = []
         key_letters_used = 0
-        input = list(input)
-        while input:
-            column = []
+        text_to_encrypt = list(text_to_encrypt)
+        while text_to_encrypt:
             key_letter = self.key_value_list[key_letters_used]
             remaining_letters_inserted_to_row_counter = key_letter.value
+            column = []
             for row_index in range(0, row_length):
                 if remaining_letters_inserted_to_row_counter > 0:
                     try:
-                        character = input.pop(0)
+                        column.append(text_to_encrypt.pop(0))
                     except IndexError:
-                        character = ""
+                        column.append("2")
                     remaining_letters_inserted_to_row_counter -= 1
                 else:
                     # xd
-                    character = "1"
-                column.append(character)
+                    column.append("1")
 
             matrix_cells.append(column)
             key_letters_used += 1
-
-        self.matrix_cells = matrix_cells
+        return matrix_cells
 
     def set_values_to_keys_letters(self, key):
         sorted_letters = sorted(key)
-        key_value_list = [KeyValue(letter, count + 1) for count, letter in enumerate(sorted_letters)]
+        key_value_list = [MatrixCell(letter, count + 1) for count, letter in enumerate(sorted_letters)]
         sorted_key_value_list = []
         for letter in key:
             for i, letterObject in enumerate(key_value_list):
@@ -114,22 +115,32 @@ class Matrix:
         for letterObject in self.key_value_list:
             if letterObject > highest:
                 highest = letterObject.value
-        return highest
+        return highest - 1
 
     def render(self):
         for row in self.matrix_cells:
-            for value in row:
-                print(value)
+            print(row)
 
     def encrypt(self):
         transponed_matrix = np.transpose(self.matrix_cells)
+        encrpted_text = ""
         for row in transponed_matrix:
             for value in row:
-                if not value == "1":
-                    print(value)
+                if value != "1":
+                    encrpted_text += value
+        return encrpted_text
+
+    def decrypt(self):
+        transponed_matrix = self.matrix_cells
+        decrypted_string = ""
+        for row in transponed_matrix:
+            for value in row:
+                if value != "1":
+                    decrypted_string += value
+        return decrypted_string
 
 
-class KeyValue:
+class MatrixCell:
     def __init__(self, character=None, value=None):
         self.character = character
         self.value = value
@@ -145,3 +156,13 @@ class KeyValue:
 
     def __str__(self):
         return f"Character: {self.character}, Value: {self.value}"
+
+
+if __name__ == "__main__":
+    key = "CONVENIENCE"
+    text_to_encrypt = "HERE IS A SECRET MESSAGE ENCIPHERED BY TRANSPOSITION"
+    matrix = Matrix(key, text_to_encrypt)
+    encrypted = matrix.encrypt()
+    print(encrypted)
+    decrypt = matrix.decrypt()
+    print(f"odszyfrowane {decrypt}")
