@@ -77,22 +77,17 @@ class Matrix:
         input = list(input)
         while input:
             column = []
-            print(key_letters_used)
             key_letter = self.key_value_list[key_letters_used]
-            print(f"KEY LETTER {key_letter}")
             remaining_letters_inserted_to_row_counter = key_letter.value
             for row_index in range(0, row_length):
                 if remaining_letters_inserted_to_row_counter > 0:
-                    print(remaining_letters_inserted_to_row_counter)
                     try:
                         character = input.pop(0)
-                        print(f"tu jest {character}")
-                    except:
+                    except IndexError:
                         character = ""
-                        print("zle")
                     remaining_letters_inserted_to_row_counter -= 1
                 else:
-                    print("tu w ogole jest?")
+                    # xd
                     character = "1"
                 column.append(character)
 
