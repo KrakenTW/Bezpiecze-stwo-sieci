@@ -2,7 +2,33 @@ import itertools
 import binascii
 import numpy as np
 from os import X_OK, path
+from functools import reduce
+from operator import xor
 
+class GLFSR:
+    def __init__(self, polynomial, seed):
+        self.polynomial = polynomial | 1
+        self.seed = seed
+        self.data = seed
+        self.mask = 1
+
+        temp_mask = polynomial
+        while temp_mask != 0:
+            if temp_mask & self.mask != 0:
+                temp_mask = temp_mask ^ self.mask
+            if temp_mask == 0: break
+            self.mask = self.mask << 1
+
+    def states(self, repeat=False):
+        while True:
+            self.data = self.data << 1
+            if self.data & self.mask != 0:
+                self.data = self.data ^ self.polynomial
+                yield 1
+            else:
+                yield 0
+            if repeat == False and self.data == self.seed:
+                return
 
 def lfsr(seed, taps,dl):
     repeat = 0
@@ -48,46 +74,71 @@ def listToString(s):
     return str1 
 
 def tekst_to_bytes(tekst):
-    # initializing string 
-    test_str = tekst
     
-    # printing original string 
-    print("The original string is : " + str(test_str))
+    test_str = tekst 
     
-    # using join() + bytearray() + format()
-    # Converting String to binary
     res = ''.join(format(i, '08b') for i in bytearray(test_str, encoding ='utf-8'))
     
-    # printing result 
     print("tekst:  " + str(res))
     return str(res)   
 
 def Cipher(BinTekst, key, dlBin):
-    Ciphered = key
-    i = 1
-    while i != dlBin:
-        if BinTekst[:i] == 0:
-            if key[:i] == 0:
-                Ciphered[:i] = "0"
-            else:
-                Ciphered[:i] = "1"
-        else:
-            if key[:i] == 0:
-                Ciphered[:i] = "0"
-            else:
-                Ciphered[:i] = "1"
-        
-    print(Ciphered)
-    return Ciphered
+    a = BinTekst
+    b = key
+    max_len = max(len(a), len(b))
+    a = a.zfill(max_len)
+    b = b.zfill(max_len)
+    
+    # Initialize the result
+    result = ''
+    
+    # Initialize the carry
+    carry = 0
+    
+    # Traverse the string
+    for i in range(max_len - 1, -1, -1):
+        r = carry
+        r += 1 if a[i] == '1' else 0
+        r += 1 if b[i] == '1' else 0
+        result = ('1' if r % 2 == 1 else '0') + result
+    
+        # Compute the carry.
+        carry = 0 if r < 2 else 1
+    
+    if carry != 0:
+        result = '1' + result
+    
+    return result
 
+def CipherDec(s1, s2):
+    return bin(int(s1, 2) - int(s2, 2))[2:]
+ 
+
+
+#Wprowadzanie danych
 tempInput = input("Wprowadz kod LFSR ktory chcesz przeanalizowac: ")
 Tekst = input("Wprowadz tekst do zaszyfrowania:  ")
+#Zamiana tekstu na bity
 BinTekst = tekst_to_bytes(Tekst)
+#pobranie potrzebnej długości klucza
 dlBin = len(BinTekst)
-key = lfsr(tempInput, (1,4), dlBin)      #example
+#stworzenie klucza oraz utworzenie z niego stringa
+key = lfsr(seed= tempInput, taps = (1,4),dl= dlBin)      #example
 key = listToString(key)
-print("klucz:  " + key)
+#Zaszyfrowany tekst za pomocą stworzonego klucza
 Zaszyfrowane = Cipher(BinTekst, key, dlBin)
+str_data =' '
+Zaszyfrowane = CipherDec(Zaszyfrowane,key) #odszyfrowanie
+while len(Zaszyfrowane) < len(BinTekst):
+    Zaszyfrowane = "0" + Zaszyfrowane
+binary_int = str(Zaszyfrowane)
+str_data= [Zaszyfrowane[i:i+8] for i in range(0, len(Zaszyfrowane), 8)]
+print(Zaszyfrowane)
+# printing the result
+print("Odszyfrowane:", str_data)
 
-print("ciphe:  " + Zaszyfrowane)
+
+
+        
+
 
