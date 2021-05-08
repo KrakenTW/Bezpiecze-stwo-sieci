@@ -87,11 +87,11 @@ class Matrix:
                     try:
                         column.append(text_to_encrypt.pop(0))
                     except IndexError:
-                        column.append("2")
+                        column.append(None)
                     remaining_letters_inserted_to_row_counter -= 1
                 else:
                     # xd
-                    column.append("1")
+                    column.append(None)
 
             matrix_cells.append(column)
             key_letters_used += 1
@@ -126,7 +126,7 @@ class Matrix:
         encrpted_text = ""
         for row in transponed_matrix:
             for value in row:
-                if value != "1":
+                if value is not None:
                     encrpted_text += value
         return encrpted_text
 
@@ -135,7 +135,7 @@ class Matrix:
         decrypted_string = ""
         for row in transponed_matrix:
             for value in row:
-                if value != "1":
+                if value is not None:
                     decrypted_string += value
         return decrypted_string
 

@@ -3,13 +3,13 @@ import io
 from django.http import JsonResponse
 from django.views.generic.edit import FormView
 
-from crypto.ciphers.matrix_shift import matrix_encryption
+from crypto.ciphers.matrix_shift import matrix_encryption, Matrix
 from crypto.ciphers.rail_fence import railfence_encrypt, decrypt_rail_fence
 from crypto.ciphers.vigenere import encrypt_vigenere, decrypt_vigenere
 from crypto.ciphers.ceasr import crypt_cesar
 from crypto.forms import CipherForm, IMPLEMENTED_CIPHERS_CHOICES
 
-
+matrix = None
 class BasicFormView(FormView):
     template_name = "index.html"
     form_class = CipherForm
@@ -17,10 +17,13 @@ class BasicFormView(FormView):
 
     # OGOLNY CLEAN
     def form_valid(self, form):
+        global matrix
         input = form.cleaned_data.get('input')
         cipher = form.cleaned_data.get('cipher')
         key = form.cleaned_data.get('key')
         file_input = form.cleaned_data.get('input_file')
+        if not matrix:
+            matrix = Matrix(key, input)
         if file_input:
             input = io.BytesIO(file_input)
         if self.is_matrix_shift(cipher):
@@ -34,13 +37,14 @@ class BasicFormView(FormView):
         elif cipher == IMPLEMENTED_CIPHERS_CHOICES[5][0]:
             output = encrypt_vigenere(input, key)
         elif cipher == IMPLEMENTED_CIPHERS_CHOICES[6][0]:
-            # CLEAN NA TO
             output = crypt_cesar(input, key)
         elif cipher == IMPLEMENTED_CIPHERS_CHOICES[7][0]:
-            # CLEAN NA TO
             key = 26 - int(key)
             output = crypt_cesar(input, key)
-
+        elif cipher == IMPLEMENTED_CIPHERS_CHOICES[8][0]:
+            output = matrix.encrypt()
+        elif cipher == IMPLEMENTED_CIPHERS_CHOICES[9][0]:
+            output = matrix.decrypt()
         return JsonResponse({"output": output})
 
     @staticmethod

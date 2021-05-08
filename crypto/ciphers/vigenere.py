@@ -26,7 +26,7 @@ def decrypt_vigenere(cipher_text, key):
              ord(key[i]) + 26) % 26
         x += ord('A')
         orig_text.append(chr(x))
-    return "".join(orig_text)
+    return("" . join(orig_text))
 
 
 def encrypt_vigenere(input, key):
